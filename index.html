@@ -1,0 +1,1026 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบประเมินการสัมภาษณ์นิสิต</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PizZip/3.1.5/pizzip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section h2 {
+            color: #764ba2;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .criteria-container, .students-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .criteria-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+
+        .criteria-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .criteria-column input {
+            width: 100%;
+        }
+
+        .criteria-actions {
+            display: flex;
+            gap: 5px;
+            align-items: flex-end;
+        }
+
+        .student-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .student-number {
+            width: 50px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .student-name-input {
+            width: 250px;
+        }
+
+        .score-inputs {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .score-inputs input {
+            width: 80px;
+            text-align: center;
+        }
+
+        .total-score {
+            width: 100px;
+        }
+
+        .remove-student-btn {
+            width: 50px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #45a049;
+        }
+
+        .btn-remove {
+            background: #f44336;
+            color: white;
+            padding: 8px 12px;
+        }
+
+        .btn-remove:hover {
+            background: #da190b;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #663d8f;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .total-score {
+            font-weight: bold;
+            color: #667eea;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        #resultsSection {
+            margin-top: 40px;
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f0f0f0;
+        }
+
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        #chartContainer {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media print {
+            .btn, .action-buttons {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 ระบบประเมินการสัมภาษณ์นิสิต</h1>
+
+        <div class="form-section">
+            <h2>ข้อมูลทั่วไป</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ระดับการศึกษา *</label>
+                    <select id="degreeLevel">
+                        <option value="">-- เลือกระดับ --</option>
+                        <option value="ปริญญาตรี">ปริญญาตรี</option>
+                        <option value="ปริญญาโท">ปริญญาโท</option>
+                        <option value="ปริญญาเอก">ปริญญาเอก</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ปีการศึกษา *</label>
+                    <input type="text" id="academicYear" placeholder="เช่น 2567">
+                </div>
+                <div class="form-group">
+                    <label>ภาคการศึกษา *</label>
+                    <select id="semester">
+                        <option value="">-- เลือกภาค --</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3 (ภาคฤดูร้อน)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>วันที่สัมภาษณ์ *</label>
+                    <input type="date" id="interviewDate">
+                </div>
+                <div class="form-group">
+                    <label>เวลา *</label>
+                    <input type="time" id="interviewTime">
+                </div>
+                <div class="form-group">
+                    <label>สถานที่สัมภาษณ์ *</label>
+                    <input type="text" id="location" placeholder="เช่น ห้อง 301 อาคาร A">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ชื่อหลักสูตร *</label>
+                    <input type="text" id="program" placeholder="เช่น วิทยาการคอมพิวเตอร์">
+                </div>
+                <div class="form-group">
+                    <label>ชื่ออาจารย์ผู้สัมภาษณ์ *</label>
+                    <input type="text" id="interviewer" placeholder="เช่น ผศ.ดร.สมชาย ใจดี">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>หลักเกณฑ์การให้คะแนน</h2>
+            <div class="criteria-container">
+                <div class="criteria-header" id="criteriaHeader">
+                    <!-- Criteria columns will be added here -->
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-add" onclick="addCriteria()">+ เพิ่มหลักเกณฑ์</button>
+                    <strong>คะแนนรวมทั้งหมด: <span id="totalMaxScore">0</span> คะแนน</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>รายชื่อนิสิตและการให้คะแนน</h2>
+            <div class="students-container">
+                <div id="studentHeader" style="display: flex; gap: 10px; padding: 10px; background: #667eea; color: white; border-radius: 8px; margin-bottom: 10px; font-weight: bold;">
+                    <div style="width: 50px; text-align: center;">ลำดับ</div>
+                    <div style="width: 250px;">ชื่อ-นามสกุล</div>
+                    <div id="criteriaHeaderLabels" style="display: flex; gap: 10px; flex: 1;"></div>
+                    <div style="width: 100px; text-align: center;">รวม</div>
+                    <div style="width: 50px;"></div>
+                </div>
+                <div id="studentsContainer">
+                    <!-- Student rows will be added here -->
+                </div>
+            </div>
+            <button class="btn btn-add" onclick="addStudent()">+ เพิ่มนิสิต</button>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="showResults()">📊 นำเสนอข้อมูล</button>
+            <button class="btn btn-warning" onclick="resetForm()">🔄 Reset</button>
+        </div>
+
+        <div id="resultsSection">
+            <div class="form-section">
+                <h2>ผลการประเมิน</h2>
+                <div id="resultsTable"></div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="downloadWord()">📄 ดาวน์โหลด Word</button>
+                    <button class="btn btn-success" onclick="downloadExcel()">📊 ดาวน์โหลด Excel</button>
+                    <button class="btn btn-info" onclick="showAnalysis()">📈 วิเคราะห์ข้อมูล</button>
+                </div>
+            </div>
+
+            <div id="analysisSection" class="hidden">
+                <div class="form-section">
+                    <h2>สถิติและการวิเคราะห์</h2>
+                    <div class="statistics" id="statisticsContainer"></div>
+                    <div id="chartContainer">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="downloadChart()">🖼️ ดาวน์โหลดกราฟ (PNG)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let criteriaCount = 0;
+        let studentCount = 0;
+        let chart = null;
+
+        // Initialize form with default criteria and students
+        function init() {
+            for (let i = 0; i < 5; i++) {
+                addCriteria();
+            }
+            for (let i = 0; i < 5; i++) {
+                addStudent();
+            }
+        }
+
+        function addCriteria() {
+            criteriaCount++;
+            const container = document.getElementById('criteriaHeader');
+            const div = document.createElement('div');
+            div.className = 'criteria-column';
+            div.id = `criteria-${criteriaCount}`;
+            div.innerHTML = `
+                <label>หลักเกณฑ์ที่ ${criteriaCount}</label>
+                <input type="text" placeholder="ชื่อหลักเกณฑ์" id="criteriaName-${criteriaCount}" oninput="updateCriteriaHeaderLabels()">
+                <input type="number" placeholder="คะแนนเต็ม" id="criteriaMax-${criteriaCount}" min="0" oninput="updateTotalMaxScore()">
+                <button class="btn btn-remove" onclick="removeCriteria(${criteriaCount})" style="padding: 8px;">-</button>
+            `;
+            container.appendChild(div);
+            updateStudentsTable();
+        }
+
+        function removeCriteria(id) {
+            const element = document.getElementById(`criteria-${id}`);
+            if (element) {
+                element.remove();
+                updateTotalMaxScore();
+                updateStudentsTable();
+            }
+        }
+
+        function addStudent() {
+            studentCount++;
+            const container = document.getElementById('studentsContainer');
+            const div = document.createElement('div');
+            div.className = 'student-row';
+            div.id = `student-${studentCount}`;
+            div.innerHTML = `
+                <div class="student-number">${studentCount}</div>
+                <input type="text" class="student-name-input" placeholder="ชื่อ-นามสกุล นิสิต" id="studentName-${studentCount}">
+                <div class="score-inputs" id="scoreInputs-${studentCount}"></div>
+                <div class="total-score" id="studentTotal-${studentCount}">0</div>
+                <button class="btn btn-remove remove-student-btn" onclick="removeStudent(${studentCount})">-</button>
+            `;
+            container.appendChild(div);
+            updateStudentScoreInputs(studentCount);
+        }
+
+        function removeStudent(id) {
+            const element = document.getElementById(`student-${id}`);
+            if (element) {
+                element.remove();
+                renumberStudents();
+            }
+        }
+
+        function renumberStudents() {
+            const container = document.getElementById('studentsContainer');
+            const students = container.getElementsByClassName('student-row');
+            Array.from(students).forEach((student, index) => {
+                const numberDiv = student.querySelector('.student-number');
+                numberDiv.textContent = index + 1;
+            });
+        }
+
+        function updateStudentsTable() {
+            // Update header labels
+            updateCriteriaHeaderLabels();
+            
+            const students = document.querySelectorAll('.student-row');
+            students.forEach(student => {
+                const id = student.id.split('-')[1];
+                updateStudentScoreInputs(id);
+            });
+        }
+
+        function updateCriteriaHeaderLabels() {
+            const container = document.getElementById('criteriaHeaderLabels');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            const criteria = document.querySelectorAll('.criteria-column');
+            
+            criteria.forEach(criteriaItem => {
+                const criteriaId = criteriaItem.id.split('-')[1];
+                const criteriaName = document.getElementById(`criteriaName-${criteriaId}`).value || `หลักเกณฑ์ ${criteriaId}`;
+                
+                const label = document.createElement('div');
+                label.style.width = '80px';
+                label.style.textAlign = 'center';
+                label.textContent = criteriaName;
+                
+                container.appendChild(label);
+            });
+        }
+
+        function updateStudentScoreInputs(studentId) {
+            const container = document.getElementById(`scoreInputs-${studentId}`);
+            if (!container) return;
+
+            container.innerHTML = '';
+            const criteria = document.querySelectorAll('.criteria-column');
+            
+            criteria.forEach(criteriaItem => {
+                const criteriaId = criteriaItem.id.split('-')[1];
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.placeholder = '0';
+                input.min = '0';
+                input.id = `score-${studentId}-${criteriaId}`;
+                input.oninput = () => calculateStudentTotal(studentId);
+                
+                container.appendChild(input);
+            });
+        }
+
+        function calculateStudentTotal(studentId) {
+            const scoreInputs = document.querySelectorAll(`[id^="score-${studentId}-"]`);
+            let total = 0;
+            scoreInputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById(`studentTotal-${studentId}`).textContent = total.toFixed(2);
+        }
+
+        function updateTotalMaxScore() {
+            const criteria = document.querySelectorAll('.criteria-column');
+            let total = 0;
+            criteria.forEach(item => {
+                const id = item.id.split('-')[1];
+                const maxScore = parseFloat(document.getElementById(`criteriaMax-${id}`).value) || 0;
+                total += maxScore;
+            });
+            document.getElementById('totalMaxScore').textContent = total.toFixed(2);
+        }
+
+        function showResults() {
+            // Validate required fields
+            const required = ['degreeLevel', 'academicYear', 'semester', 'interviewDate', 'interviewTime', 'location', 'program', 'interviewer'];
+            for (let field of required) {
+                if (!document.getElementById(field).value) {
+                    alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                    return;
+                }
+            }
+
+            const resultsTable = generateResultsTable();
+            document.getElementById('resultsTable').innerHTML = resultsTable;
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('analysisSection').classList.add('hidden');
+        }
+
+        function generateResultsTable() {
+            const degreeLevel = document.getElementById('degreeLevel').value;
+            const academicYear = document.getElementById('academicYear').value;
+            const semester = document.getElementById('semester').value;
+            const interviewDate = document.getElementById('interviewDate').value;
+            const interviewTime = document.getElementById('interviewTime').value;
+            const location = document.getElementById('location').value;
+            const program = document.getElementById('program').value;
+            const interviewer = document.getElementById('interviewer').value;
+
+            let html = `
+                <div style="margin-bottom: 20px; padding: 20px; background: #f5f5f5; border-radius: 10px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">รายละเอียดการสัมภาษณ์</h3>
+                    <p><strong>ระดับการศึกษา:</strong> ${degreeLevel}</p>
+                    <p><strong>ปีการศึกษา:</strong> ${academicYear} ภาคการศึกษา ${semester}</p>
+                    <p><strong>วันที่สัมภาษณ์:</strong> ${formatDate(interviewDate)} เวลา ${interviewTime} น.</p>
+                    <p><strong>สถานที่:</strong> ${location}</p>
+                    <p><strong>หลักสูตร:</strong> ${program}</p>
+                    <p><strong>อาจารย์ผู้สัมภาษณ์:</strong> ${interviewer}</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>ชื่อ-นามสกุล</th>
+            `;
+
+            // Add criteria headers
+            const criteria = document.querySelectorAll('.criteria-column');
+            criteria.forEach(item => {
+                const id = item.id.split('-')[1];
+                const name = document.getElementById(`criteriaName-${id}`).value || 'ไม่ระบุ';
+                const max = document.getElementById(`criteriaMax-${id}`).value || '0';
+                html += `<th>${name}<br>(${max})</th>`;
+            });
+
+            html += `
+                            <th>รวม</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Add student rows
+            const students = document.querySelectorAll('.student-row');
+            let rowNum = 1;
+            students.forEach(student => {
+                const studentId = student.id.split('-')[1];
+                const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
+                const total = document.getElementById(`studentTotal-${studentId}`).textContent;
+
+                html += `
+                    <tr>
+                        <td>${rowNum++}</td>
+                        <td>${name}</td>
+                `;
+
+                criteria.forEach(item => {
+                    const criteriaId = item.id.split('-')[1];
+                    const score = document.getElementById(`score-${studentId}-${criteriaId}`).value || '0';
+                    html += `<td>${score}</td>`;
+                });
+
+                html += `
+                        <td><strong>${total}</strong></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            return html;
+        }
+
+        function formatDate(dateString) {
+            try {
+                if (!dateString) return 'ไม่ระบุ';
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'ไม่ระบุ';
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('th-TH', options);
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'ไม่ระบุ';
+            }
+        }
+
+        function showAnalysis() {
+            const students = document.querySelectorAll('.student-row');
+            const scores = [];
+            const names = [];
+
+            students.forEach(student => {
+                const studentId = student.id.split('-')[1];
+                const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
+                const total = parseFloat(document.getElementById(`studentTotal-${studentId}`).textContent);
+                
+                if (name && !isNaN(total)) {
+                    names.push(name);
+                    scores.push(total);
+                }
+            });
+
+            if (scores.length === 0) {
+                alert('ไม่มีข้อมูลสำหรับการวิเคราะห์');
+                return;
+            }
+
+            // Calculate statistics
+            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            const max = Math.max(...scores);
+            const min = Math.min(...scores);
+            const maxScore = parseFloat(document.getElementById('totalMaxScore').textContent);
+
+            // Display statistics
+            const statsHtml = `
+                <div class="stat-card">
+                    <h3>จำนวนนิสิต</h3>
+                    <div class="value">${scores.length}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>คะแนนเฉลี่ย</h3>
+                    <div class="value">${avg.toFixed(2)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>คะแนนสูงสุด</h3>
+                    <div class="value">${max.toFixed(2)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>คะแนนต่ำสุด</h3>
+                    <div class="value">${min.toFixed(2)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>คะแนนเต็ม</h3>
+                    <div class="value">${maxScore}</div>
+                </div>
+            `;
+            document.getElementById('statisticsContainer').innerHTML = statsHtml;
+
+            // Create chart
+            createChart(names, scores);
+
+            document.getElementById('analysisSection').classList.remove('hidden');
+        }
+
+        function createChart(names, scores) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: 'คะแนนที่ได้',
+                        data: scores,
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'กราฟแสดงคะแนนการสัมภาษณ์',
+                            font: {
+                                size: 18
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'คะแนน'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'นิสิต'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function downloadChart() {
+            const canvas = document.getElementById('scoreChart');
+            canvas.toBlob(function(blob) {
+                saveAs(blob, 'interview_chart.png');
+            });
+        }
+
+        function downloadExcel() {
+            try {
+                // Validate that results have been shown
+                if (document.getElementById('resultsSection').style.display === 'none') {
+                    alert('กรุณากดปุ่ม "นำเสนอข้อมูล" ก่อนดาวน์โหลด');
+                    return;
+                }
+
+                const wb = XLSX.utils.book_new();
+                
+                // Create header data
+                const interviewDateValue = document.getElementById('interviewDate').value;
+                const formattedDate = interviewDateValue ? formatDate(interviewDateValue) : 'ไม่ระบุ';
+                
+                const headerData = [
+                    ['ระบบประเมินการสัมภาษณ์นิสิต'],
+                    [''],
+                    ['ระดับการศึกษา:', document.getElementById('degreeLevel').value || 'ไม่ระบุ'],
+                    ['ปีการศึกษา:', document.getElementById('academicYear').value || 'ไม่ระบุ', 'ภาคการศึกษา:', document.getElementById('semester').value || 'ไม่ระบุ'],
+                    ['วันที่สัมภาษณ์:', formattedDate, 'เวลา:', document.getElementById('interviewTime').value || 'ไม่ระบุ'],
+                    ['สถานที่:', document.getElementById('location').value || 'ไม่ระบุ'],
+                    ['หลักสูตร:', document.getElementById('program').value || 'ไม่ระบุ'],
+                    ['อาจารย์ผู้สัมภาษณ์:', document.getElementById('interviewer').value || 'ไม่ระบุ'],
+                    [''],
+                ];
+
+                // Create table headers
+                const tableHeaders = ['ลำดับ', 'ชื่อ-นามสกุล'];
+                const criteria = document.querySelectorAll('.criteria-column');
+                criteria.forEach(item => {
+                    const id = item.id.split('-')[1];
+                    const name = document.getElementById(`criteriaName-${id}`).value || 'ไม่ระบุ';
+                    const max = document.getElementById(`criteriaMax-${id}`).value || '0';
+                    tableHeaders.push(`${name} (${max})`);
+                });
+                tableHeaders.push('รวม');
+
+                const data = [tableHeaders];
+
+                // Add student data
+                const students = document.querySelectorAll('.student-row');
+                let rowNum = 1;
+                students.forEach(student => {
+                    const studentId = student.id.split('-')[1];
+                    const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
+                    const total = document.getElementById(`studentTotal-${studentId}`).textContent || '0';
+
+                    const row = [rowNum++, name];
+
+                    criteria.forEach(item => {
+                        const criteriaId = item.id.split('-')[1];
+                        const score = parseFloat(document.getElementById(`score-${studentId}-${criteriaId}`).value) || 0;
+                        row.push(score);
+                    });
+
+                    row.push(parseFloat(total));
+                    data.push(row);
+                });
+
+                const allData = [...headerData, ...data];
+                const ws = XLSX.utils.aoa_to_sheet(allData);
+                
+                // Set column widths
+                ws['!cols'] = [
+                    { wch: 8 },
+                    { wch: 30 },
+                    ...Array(criteria.length).fill({ wch: 15 }),
+                    { wch: 10 }
+                ];
+
+                XLSX.utils.book_append_sheet(wb, ws, 'ผลการสัมภาษณ์');
+                XLSX.writeFile(wb, 'interview_results.xlsx');
+                
+                // Show success message
+                setTimeout(() => {
+                    alert('✅ ดาวน์โหลดไฟล์ Excel สำเร็จ!\nกรุณาตรวจสอบในโฟลเดอร์ Downloads');
+                }, 100);
+                
+            } catch (error) {
+                alert('❌ เกิดข้อผิดพลาดในการดาวน์โหลด Excel: ' + error.message);
+                console.error('Download Excel Error:', error);
+            }
+        }
+
+        function downloadWord() {
+            try {
+                // Validate that results have been shown
+                if (document.getElementById('resultsSection').style.display === 'none') {
+                    alert('กรุณากดปุ่ม "นำเสนอข้อมูล" ก่อนดาวน์โหลด');
+                    return;
+                }
+
+                // Get form data with validation
+                const degreeLevel = document.getElementById('degreeLevel').value || 'ไม่ระบุ';
+                const academicYear = document.getElementById('academicYear').value || 'ไม่ระบุ';
+                const semester = document.getElementById('semester').value || 'ไม่ระบุ';
+                const interviewDateValue = document.getElementById('interviewDate').value;
+                const interviewDate = interviewDateValue ? formatDate(interviewDateValue) : 'ไม่ระบุ';
+                const interviewTime = document.getElementById('interviewTime').value || 'ไม่ระบุ';
+                const location = document.getElementById('location').value || 'ไม่ระบุ';
+                const program = document.getElementById('program').value || 'ไม่ระบุ';
+                const interviewer = document.getElementById('interviewer').value || 'ไม่ระบุ';
+
+                // Build criteria headers
+                const criteria = document.querySelectorAll('.criteria-column');
+                let criteriaHeaders = '';
+                criteria.forEach(item => {
+                    const id = item.id.split('-')[1];
+                    const name = document.getElementById(`criteriaName-${id}`).value || 'ไม่ระบุ';
+                    const max = document.getElementById(`criteriaMax-${id}`).value || '0';
+                    criteriaHeaders += `<th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">${name}<br/>(${max})</th>`;
+                });
+
+                // Build student rows
+                const students = document.querySelectorAll('.student-row');
+                let studentRows = '';
+                let rowNum = 1;
+                students.forEach(student => {
+                    const studentId = student.id.split('-')[1];
+                    const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
+                    const total = document.getElementById(`studentTotal-${studentId}`).textContent || '0';
+
+                    studentRows += `<tr>`;
+                    studentRows += `<td style="border: 1px solid #000; padding: 8px; text-align: center;">${rowNum++}</td>`;
+                    studentRows += `<td style="border: 1px solid #000; padding: 8px;">${name}</td>`;
+
+                    criteria.forEach(item => {
+                        const criteriaId = item.id.split('-')[1];
+                        const score = document.getElementById(`score-${studentId}-${criteriaId}`).value || '0';
+                        studentRows += `<td style="border: 1px solid #000; padding: 8px; text-align: center;">${score}</td>`;
+                    });
+
+                    studentRows += `<td style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">${total}</td>`;
+                    studentRows += `</tr>`;
+                });
+
+                let content = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                          xmlns:w='urn:schemas-microsoft-com:office:word' 
+                          xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                        <meta charset='utf-8'>
+                        <title>ผลการประเมินการสัมภาษณ์</title>
+                        <style>
+                            body { font-family: 'Sarabun', 'Cordia New', 'TH SarabunPSK', sans-serif; }
+                            h1 { text-align: center; color: #667eea; margin-bottom: 20px; }
+                            .info-section { margin: 20px 0; padding: 15px; background: #f5f5f5; }
+                            .info-section p { margin: 5px 0; }
+                            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                            th { background: #667eea; color: white; font-weight: bold; }
+                            td, th { border: 1px solid #000; padding: 8px; }
+                            tr:nth-child(even) { background: #f9f9f9; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>ระบบประเมินการสัมภาษณ์นิสิต</h1>
+                        
+                        <div class="info-section">
+                            <h3 style="color: #667eea; margin-bottom: 10px;">รายละเอียดการสัมภาษณ์</h3>
+                            <p><strong>ระดับการศึกษา:</strong> ${degreeLevel}</p>
+                            <p><strong>ปีการศึกษา:</strong> ${academicYear} ภาคการศึกษา ${semester}</p>
+                            <p><strong>วันที่สัมภาษณ์:</strong> ${interviewDate} เวลา ${interviewTime} น.</p>
+                            <p><strong>สถานที่:</strong> ${location}</p>
+                            <p><strong>หลักสูตร:</strong> ${program}</p>
+                            <p><strong>อาจารย์ผู้สัมภาษณ์:</strong> ${interviewer}</p>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">ลำดับ</th>
+                                    <th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">ชื่อ-นามสกุล</th>
+                                    ${criteriaHeaders}
+                                    <th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">รวม</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${studentRows}
+                            </tbody>
+                        </table>
+                    </body>
+                    </html>
+                `;
+
+                const blob = new Blob(['\ufeff', content], {
+                    type: 'application/msword'
+                });
+
+                saveAs(blob, 'interview_results.doc');
+                
+                // Show success message
+                setTimeout(() => {
+                    alert('✅ ดาวน์โหลดไฟล์ Word สำเร็จ!\nกรุณาตรวจสอบในโฟลเดอร์ Downloads');
+                }, 100);
+                
+            } catch (error) {
+                alert('❌ เกิดข้อผิดพลาดในการดาวน์โหลด Word: ' + error.message);
+                console.error('Download Word Error:', error);
+            }
+        }
+
+        function resetForm() {
+            if (confirm('คุณต้องการรีเซ็ตฟอร์มทั้งหมดหรือไม่?')) {
+                location.reload();
+            }
+        }
+
+        // Initialize on page load
+        window.onload = init;
+    </script>
+</body>
+</html>
