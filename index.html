@@ -1,1026 +1,527 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบประเมินการสัมภาษณ์นิสิต</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PizZip/3.1.5/pizzip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>แบบประเมินการสอบสัมภาษณ์นิสิต</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            min-height: 100vh;
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f3f4f6;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25.4mm; /* APA Standard 1 inch margin */
+            margin: 10mm auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
         }
-
-        h1 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 30px;
-            font-size: 2em;
-        }
-
-        .form-section {
-            margin-bottom: 25px;
-        }
-
-        .form-section h2 {
-            color: #764ba2;
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 8px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #333;
-        }
-
-        input, select, textarea {
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .criteria-container, .students-container {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .criteria-header {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: flex-end;
-        }
-
-        .criteria-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .criteria-column input {
-            width: 100%;
-        }
-
-        .criteria-actions {
-            display: flex;
-            gap: 5px;
-            align-items: flex-end;
-        }
-
-        .student-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-        }
-
-        .student-number {
-            width: 50px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .student-name-input {
-            width: 250px;
-        }
-
-        .score-inputs {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-        }
-
-        .score-inputs input {
-            width: 80px;
-            text-align: center;
-        }
-
-        .total-score {
-            width: 100px;
-        }
-
-        .remove-student-btn {
-            width: 50px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-
-        .btn-add {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-add:hover {
-            background: #45a049;
-        }
-
-        .btn-remove {
-            background: #f44336;
-            color: white;
-            padding: 8px 12px;
-        }
-
-        .btn-remove:hover {
-            background: #da190b;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #764ba2;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #663d8f;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-info:hover {
-            background: #138496;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #333;
-        }
-
-        .btn-warning:hover {
-            background: #e0a800;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-
-        .total-score {
-            font-weight: bold;
-            color: #667eea;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        #resultsSection {
-            margin-top: 40px;
-            display: none;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: center;
-        }
-
-        th {
-            background: #667eea;
-            color: white;
-            font-weight: 600;
-        }
-
-        tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-
-        tr:hover {
-            background: #f0f0f0;
-        }
-
-        .statistics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            font-size: 1em;
-            margin-bottom: 10px;
-        }
-
-        .stat-card .value {
-            font-size: 2em;
-            font-weight: bold;
-        }
-
-        #chartContainer {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .hidden {
-            display: none;
-        }
-
         @media print {
-            .btn, .action-buttons {
-                display: none;
-            }
+            body { background: none; }
+            .a4-page { margin: 0; box-shadow: none; width: 100%; padding: 25.4mm; }
+            .no-print { display: none; }
         }
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        /* Table Styles specifically for Word Export compatibility */
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 8px; vertical-align: middle; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📋 ระบบประเมินการสัมภาษณ์นิสิต</h1>
 
-        <div class="form-section">
-            <h2>ข้อมูลทั่วไป</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>ระดับการศึกษา *</label>
-                    <select id="degreeLevel">
-                        <option value="">-- เลือกระดับ --</option>
-                        <option value="ปริญญาตรี">ปริญญาตรี</option>
-                        <option value="ปริญญาโท">ปริญญาโท</option>
-                        <option value="ปริญญาเอก">ปริญญาเอก</option>
+    <div class="container mx-auto p-4 no-print text-center">
+        <h1 class="text-2xl font-bold mb-4 text-gray-700">ระบบประเมินนิสิตเข้าสัมภาษณ์</h1>
+        <div class="flex justify-center gap-4 flex-wrap">
+            <button onclick="togglePreview()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+                👁️ แสดงผลข้อมูล / แก้ไข
+            </button>
+            <button onclick="exportToWord()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow">
+                💾 ดาวน์โหลด MS Word (APA Format)
+            </button>
+            <button onclick="resetForm()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded shadow">
+                🔄 Reset ข้อมูล
+            </button>
+        </div>
+    </div>
+
+    <div id="document-area" class="a4-page mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <h2 class="text-xl font-bold">แบบประเมินการสัมภาษณ์</h2>
+            <p class="text-gray-600 text-sm">วิทยาลัยการเมืองการปกครอง</p>
+        </div>
+
+        <!-- Form Section 1: General Info -->
+        <div class="grid grid-cols-12 gap-4 mb-6 text-sm">
+            <div class="col-span-8">
+                <label class="block font-bold mb-1">ชื่อผู้สมัคร:</label>
+                <input type="text" id="applicantName" class="w-full border-b border-gray-400 outline-none focus:border-blue-500 px-1" placeholder="กรอกชื่อ-นามสกุล">
+            </div>
+            <div class="col-span-4">
+                <label class="block font-bold mb-1">ID (รหัสผู้สมัคร):</label>
+                <input type="text" id="applicantID" class="w-full border-b border-gray-400 outline-none focus:border-blue-500 px-1" placeholder="เช่น 66xxxxxxxx">
+            </div>
+
+            <div class="col-span-6">
+                <label class="block font-bold mb-1">หลักสูตรที่สมัคร:</label>
+                <div class="flex items-center gap-2">
+                    <select id="program" class="w-full border rounded p-1 bg-white">
+                        <option value="">-- เลือกหลักสูตร --</option>
+                        <option value="การเมืองการปกครอง">การเมืองการปกครอง</option>
+                        <option value="รัฐประศาสนศาสตร์">รัฐประศาสนศาสตร์</option>
+                        <option value="รัฐศาสตรดุษฎีบัณฑิต">รัฐศาสตรดุษฎีบัณฑิต</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label>ปีการศึกษา *</label>
-                    <input type="text" id="academicYear" placeholder="เช่น 2567">
-                </div>
-                <div class="form-group">
-                    <label>ภาคการศึกษา *</label>
-                    <select id="semester">
-                        <option value="">-- เลือกภาค --</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3 (ภาคฤดูร้อน)</option>
-                    </select>
+                    <!-- ปุ่มบวก เรียก Modal -->
+                    <button type="button" onclick="openAddProgramModal()" class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-green-600 no-print" title="เพิ่มหลักสูตรใหม่">+</button>
                 </div>
             </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>วันที่สัมภาษณ์ *</label>
-                    <input type="date" id="interviewDate">
-                </div>
-                <div class="form-group">
-                    <label>เวลา *</label>
-                    <input type="time" id="interviewTime">
-                </div>
-                <div class="form-group">
-                    <label>สถานที่สัมภาษณ์ *</label>
-                    <input type="text" id="location" placeholder="เช่น ห้อง 301 อาคาร A">
-                </div>
+            <div class="col-span-6">
+                <label class="block font-bold mb-1">ระดับการศึกษา:</label>
+                <select id="educationLevel" class="w-full border rounded p-1 bg-white">
+                    <option value="ปริญญาตรี">ปริญญาตรี</option>
+                    <option value="ปริญญาโท">ปริญญาโท</option>
+                    <option value="ปริญญาเอก">ปริญญาเอก</option>
+                </select>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>ชื่อหลักสูตร *</label>
-                    <input type="text" id="program" placeholder="เช่น วิทยาการคอมพิวเตอร์">
-                </div>
-                <div class="form-group">
-                    <label>ชื่ออาจารย์ผู้สัมภาษณ์ *</label>
-                    <input type="text" id="interviewer" placeholder="เช่น ผศ.ดร.สมชาย ใจดี">
-                </div>
+            <div class="col-span-12 md:col-span-6">
+                <label class="block font-bold mb-1">สถานที่สัมภาษณ์:</label>
+                <input type="text" id="location" class="w-full border-b border-gray-400 outline-none px-1" value="คณะรัฐศาสตร์ฯ ห้องสอบสัมภาษณ์ 1">
+            </div>
+            <div class="col-span-6 md:col-span-3">
+                <label class="block font-bold mb-1">วันที่สัมภาษณ์:</label>
+                <input type="date" id="interviewDate" class="w-full border rounded px-1">
+            </div>
+            <div class="col-span-6 md:col-span-3">
+                <label class="block font-bold mb-1">เวลา:</label>
+                <input type="time" id="interviewTime" class="w-full border rounded px-1">
+            </div>
+            
+            <div class="col-span-12">
+                <label class="block font-bold mb-1">ชื่ออาจารย์ผู้สัมภาษณ์ (สำหรับบันทึก):</label>
+                <input type="text" id="interviewerName" class="w-full border-b border-gray-400 outline-none px-1" placeholder="ระบุชื่ออาจารย์">
             </div>
         </div>
 
-        <div class="form-section">
-            <h2>หลักเกณฑ์การให้คะแนน</h2>
-            <div class="criteria-container">
-                <div class="criteria-header" id="criteriaHeader">
-                    <!-- Criteria columns will be added here -->
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <button class="btn btn-add" onclick="addCriteria()">+ เพิ่มหลักเกณฑ์</button>
-                    <strong>คะแนนรวมทั้งหมด: <span id="totalMaxScore">0</span> คะแนน</strong>
-                </div>
+        <!-- Section 2: Scoring Table -->
+        <div class="mb-6">
+            <table class="w-full text-sm border border-black">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-black p-2 w-3/4 text-left">ประเด็นในการประเมินและสัมภาษณ์</th>
+                        <th class="border border-black p-2 w-1/4 text-center">คะแนน</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 1. ความรู้ -->
+                    <tr>
+                        <td class="border border-black p-2 font-bold bg-gray-50">1. ความรู้</td>
+                        <td class="border border-black bg-gray-50"></td>
+                    </tr>
+                    
+                    <!-- 1.1 ความรู้ทั่วไป -->
+                    <tr>
+                        <td class="border border-black p-2 pl-6 font-semibold">1.1 ความรู้ทั่วไป (100)</td>
+                        <td class="border border-black bg-gray-50"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-10">1.1.1 ความรู้ทั่วไปเกี่ยวกับสถานการณ์ปัจจุบัน</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="50" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.1">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-10">1.1.2 ความรู้ทั่วไปเกี่ยวกับสถานการณ์โลก</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="50" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.1">
+                        </td>
+                    </tr>
+                    <tr class="bg-gray-200">
+                        <td class="border border-black p-2 text-center font-bold">คะแนนรวม 1.1</td>
+                        <td class="border border-black p-2 text-center font-bold" id="total-1.1">0</td>
+                    </tr>
+
+                    <!-- 1.2 ความรู้เฉพาะ -->
+                    <tr>
+                        <td class="border border-black p-2 pl-6 font-semibold">1.2 ความรู้ที่เกี่ยวข้องเฉพาะ (100)</td>
+                        <td class="border border-black bg-gray-50"></td>
+                    </tr>
+                    
+                    <!-- Group: Public Admin -->
+                    <tr>
+                        <td class="border border-black p-2 pl-10 italic text-gray-600">กลุ่มวิชาบริหารรัฐกิจและนโยบายสาธารณะ</td>
+                        <td class="border border-black bg-gray-50"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-12">1.2.1 ความรู้ความเข้าใจด้านระบบราชการไทย</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="33" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-12">1.2.2 ความรู้ความเข้าใจด้านการคลังสาธารณะ</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="33" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-12">1.2.3 ความรู้ความเข้าใจด้านนโยบายสาธารณะ</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="34" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.2">
+                        </td>
+                    </tr>
+
+                     <!-- Group: Politics -->
+                     <tr>
+                        <td class="border border-black p-2 pl-10 italic text-gray-600">กลุ่มวิชาการเมืองการปกครอง (เลือกกรอกตามสาขา)</td>
+                        <td class="border border-black bg-gray-50"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-12">1.2.4 ความรู้ความเข้าใจเกี่ยวกับการเมืองการปกครองไทย</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="33" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-12">1.2.5 ความรู้ความเข้าใจเกี่ยวกับปรัชญาการเมืองและทฤษฎีการเมือง</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="33" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-12">1.2.6 ความรู้ความเข้าใจเกี่ยวกับสิทธิมนุษยชน</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="34" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="1.2">
+                        </td>
+                    </tr>
+                    <tr class="bg-gray-200">
+                        <td class="border border-black p-2 text-center font-bold">คะแนนรวม 1.2</td>
+                        <td class="border border-black p-2 text-center font-bold" id="total-1.2">0</td>
+                    </tr>
+
+                    <!-- 2. บุคลิกภาพ -->
+                    <tr>
+                        <td class="border border-black p-2 font-bold bg-gray-50">2. บุคลิกภาพ (100)</td>
+                        <td class="border border-black bg-gray-50"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-6">2.1 การแต่งกาย</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="33" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-6">2.2 ท่วงที วาจา</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="33" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-6">2.3 มารยาท</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="34" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="2">
+                        </td>
+                    </tr>
+                    <tr class="bg-gray-200">
+                        <td class="border border-black p-2 text-center font-bold">คะแนนรวม 2</td>
+                        <td class="border border-black p-2 text-center font-bold" id="total-2">0</td>
+                    </tr>
+
+                    <!-- 3. เชาว์ปัญญา -->
+                    <tr>
+                        <td class="border border-black p-2 font-bold bg-gray-50">3. เชาว์ปัญญา ไหวพริบ (100)</td>
+                        <td class="border border-black bg-gray-50"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-6">3.1 ความมั่นใจในการตอบคำถาม</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="50" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="3">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 pl-6">3.2 การแก้ไขปัญหาเฉพาะหน้า</td>
+                        <td class="border border-black p-0">
+                            <input type="number" min="0" max="50" class="score-input w-full h-full text-center p-2 outline-none" oninput="calcScores()" data-group="3">
+                        </td>
+                    </tr>
+                    <tr class="bg-gray-200">
+                        <td class="border border-black p-2 text-center font-bold">คะแนนรวม 3</td>
+                        <td class="border border-black p-2 text-center font-bold" id="total-3">0</td>
+                    </tr>
+
+                    <!-- Grand Total -->
+                    <tr class="bg-blue-100">
+                        <td class="border border-black p-2 text-center font-extrabold text-lg">คะแนนรวมทั้งหมด</td>
+                        <td class="border border-black p-2 text-center font-extrabold text-lg" id="grand-total">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section 3: Text Areas -->
+        <div class="mb-6 space-y-4 text-sm">
+            <div>
+                <label class="block font-bold mb-1">ประสบการณ์วิจัย:</label>
+                <textarea id="researchExp" rows="3" class="w-full border border-gray-400 rounded p-2" placeholder="ระบุประสบการณ์วิจัยที่ผ่านมา..."></textarea>
+            </div>
+            <div>
+                <label class="block font-bold mb-1">หัวข้อที่ต้องการวิจัย (Thesis/IS Topic):</label>
+                <textarea id="researchTopic" rows="2" class="w-full border border-gray-400 rounded p-2" placeholder="ระบุหัวข้อที่สนใจ..."></textarea>
             </div>
         </div>
 
-        <div class="form-section">
-            <h2>รายชื่อนิสิตและการให้คะแนน</h2>
-            <div class="students-container">
-                <div id="studentHeader" style="display: flex; gap: 10px; padding: 10px; background: #667eea; color: white; border-radius: 8px; margin-bottom: 10px; font-weight: bold;">
-                    <div style="width: 50px; text-align: center;">ลำดับ</div>
-                    <div style="width: 250px;">ชื่อ-นามสกุล</div>
-                    <div id="criteriaHeaderLabels" style="display: flex; gap: 10px; flex: 1;"></div>
-                    <div style="width: 100px; text-align: center;">รวม</div>
-                    <div style="width: 50px;"></div>
-                </div>
-                <div id="studentsContainer">
-                    <!-- Student rows will be added here -->
-                </div>
+        <!-- Section 4: Decision -->
+        <div class="mb-6 border border-gray-400 p-4 rounded bg-white">
+            <h3 class="font-bold mb-3 border-b pb-1">ความเห็นผู้ประเมิน</h3>
+            <div class="flex gap-8 mb-4">
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="decision" value="accept" class="w-5 h-5 text-green-600">
+                    <span class="ml-2 font-bold text-green-700">สมควรรับเข้าเป็นนิสิต</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="decision" value="reject" class="w-5 h-5 text-red-600">
+                    <span class="ml-2 font-bold text-red-700">ไม่สมควรรับเข้าเป็นนิสิต</span>
+                </label>
             </div>
-            <button class="btn btn-add" onclick="addStudent()">+ เพิ่มนิสิต</button>
+            <div>
+                <label class="block font-bold mb-1">ข้อสังเกตและความคิดเห็นของอาจารย์ (ถ้ามี):</label>
+                <textarea id="comments" rows="3" class="w-full border border-gray-300 rounded p-2 bg-gray-50"></textarea>
+            </div>
         </div>
 
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="showResults()">📊 นำเสนอข้อมูล</button>
-            <button class="btn btn-warning" onclick="resetForm()">🔄 Reset</button>
-        </div>
-
-        <div id="resultsSection">
-            <div class="form-section">
-                <h2>ผลการประเมิน</h2>
-                <div id="resultsTable"></div>
-                
-                <div class="action-buttons">
-                    <button class="btn btn-success" onclick="downloadWord()">📄 ดาวน์โหลด Word</button>
-                    <button class="btn btn-success" onclick="downloadExcel()">📊 ดาวน์โหลด Excel</button>
-                    <button class="btn btn-info" onclick="showAnalysis()">📈 วิเคราะห์ข้อมูล</button>
+        <!-- Signature Section (Updated: Independent Input) -->
+        <div class="flex justify-end mt-12 pb-8">
+            <div class="text-center w-72">
+                <!-- Signature Line -->
+                 <div class="mb-2 h-8"></div> 
+                <div class="flex items-center justify-center">
+                    ( <input type="text" id="signerName" class="w-48 text-center border-b border-black outline-none bg-transparent" placeholder="พิมพ์ชื่อผู้สัมภาษณ์"> )
                 </div>
+                <p class="font-bold text-sm mt-1">ผู้สัมภาษณ์</p>
             </div>
+        </div>
+    </div>
 
-            <div id="analysisSection" class="hidden">
-                <div class="form-section">
-                    <h2>สถิติและการวิเคราะห์</h2>
-                    <div class="statistics" id="statisticsContainer"></div>
-                    <div id="chartContainer">
-                        <canvas id="scoreChart"></canvas>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn btn-secondary" onclick="downloadChart()">🖼️ ดาวน์โหลดกราฟ (PNG)</button>
-                    </div>
-                </div>
+    <!-- Modal for adding program -->
+    <div id="addProgramModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center no-print" style="z-index: 50;">
+        <div class="bg-white p-6 rounded shadow-lg w-96">
+            <h3 class="text-lg font-bold mb-4">เพิ่มหลักสูตรใหม่</h3>
+            <input type="text" id="newProgramInput" class="w-full border p-2 mb-4 rounded" placeholder="พิมพ์ชื่อหลักสูตร...">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeAddProgramModal()" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">ยกเลิก</button>
+                <button onclick="confirmAddProgram()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">บันทึก</button>
             </div>
         </div>
     </div>
 
     <script>
-        let criteriaCount = 0;
-        let studentCount = 0;
-        let chart = null;
-
-        // Initialize form with default criteria and students
-        function init() {
-            for (let i = 0; i < 5; i++) {
-                addCriteria();
-            }
-            for (let i = 0; i < 5; i++) {
-                addStudent();
-            }
+        // 1. New Modal Logic for Adding Program
+        function openAddProgramModal() {
+            document.getElementById('addProgramModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('newProgramInput').focus(), 100);
         }
 
-        function addCriteria() {
-            criteriaCount++;
-            const container = document.getElementById('criteriaHeader');
-            const div = document.createElement('div');
-            div.className = 'criteria-column';
-            div.id = `criteria-${criteriaCount}`;
-            div.innerHTML = `
-                <label>หลักเกณฑ์ที่ ${criteriaCount}</label>
-                <input type="text" placeholder="ชื่อหลักเกณฑ์" id="criteriaName-${criteriaCount}" oninput="updateCriteriaHeaderLabels()">
-                <input type="number" placeholder="คะแนนเต็ม" id="criteriaMax-${criteriaCount}" min="0" oninput="updateTotalMaxScore()">
-                <button class="btn btn-remove" onclick="removeCriteria(${criteriaCount})" style="padding: 8px;">-</button>
-            `;
-            container.appendChild(div);
-            updateStudentsTable();
+        function closeAddProgramModal() {
+            document.getElementById('addProgramModal').classList.add('hidden');
+            document.getElementById('newProgramInput').value = '';
         }
 
-        function removeCriteria(id) {
-            const element = document.getElementById(`criteria-${id}`);
-            if (element) {
-                element.remove();
-                updateTotalMaxScore();
-                updateStudentsTable();
+        function confirmAddProgram() {
+            const input = document.getElementById('newProgramInput');
+            const newProgram = input.value;
+            if (newProgram && newProgram.trim() !== "") {
+                const select = document.getElementById('program');
+                const option = document.createElement("option");
+                option.text = newProgram;
+                option.value = newProgram;
+                select.add(option);
+                select.value = newProgram; // Select the new option automatically
+                closeAddProgramModal();
+            } else {
+                alert("กรุณากรอกชื่อหลักสูตร");
             }
         }
 
-        function addStudent() {
-            studentCount++;
-            const container = document.getElementById('studentsContainer');
-            const div = document.createElement('div');
-            div.className = 'student-row';
-            div.id = `student-${studentCount}`;
-            div.innerHTML = `
-                <div class="student-number">${studentCount}</div>
-                <input type="text" class="student-name-input" placeholder="ชื่อ-นามสกุล นิสิต" id="studentName-${studentCount}">
-                <div class="score-inputs" id="scoreInputs-${studentCount}"></div>
-                <div class="total-score" id="studentTotal-${studentCount}">0</div>
-                <button class="btn btn-remove remove-student-btn" onclick="removeStudent(${studentCount})">-</button>
-            `;
-            container.appendChild(div);
-            updateStudentScoreInputs(studentCount);
+        // Calculate Scores
+        function calcScores() {
+            let total1_1 = sumGroup('1.1');
+            let total1_2 = sumGroup('1.2');
+            let total2 = sumGroup('2');
+            let total3 = sumGroup('3');
+
+            document.getElementById('total-1.1').innerText = total1_1;
+            document.getElementById('total-1.2').innerText = total1_2;
+            document.getElementById('total-2').innerText = total2;
+            document.getElementById('total-3').innerText = total3;
+
+            document.getElementById('grand-total').innerText = total1_1 + total1_2 + total2 + total3;
         }
 
-        function removeStudent(id) {
-            const element = document.getElementById(`student-${id}`);
-            if (element) {
-                element.remove();
-                renumberStudents();
-            }
-        }
-
-        function renumberStudents() {
-            const container = document.getElementById('studentsContainer');
-            const students = container.getElementsByClassName('student-row');
-            Array.from(students).forEach((student, index) => {
-                const numberDiv = student.querySelector('.student-number');
-                numberDiv.textContent = index + 1;
-            });
-        }
-
-        function updateStudentsTable() {
-            // Update header labels
-            updateCriteriaHeaderLabels();
-            
-            const students = document.querySelectorAll('.student-row');
-            students.forEach(student => {
-                const id = student.id.split('-')[1];
-                updateStudentScoreInputs(id);
-            });
-        }
-
-        function updateCriteriaHeaderLabels() {
-            const container = document.getElementById('criteriaHeaderLabels');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            const criteria = document.querySelectorAll('.criteria-column');
-            
-            criteria.forEach(criteriaItem => {
-                const criteriaId = criteriaItem.id.split('-')[1];
-                const criteriaName = document.getElementById(`criteriaName-${criteriaId}`).value || `หลักเกณฑ์ ${criteriaId}`;
-                
-                const label = document.createElement('div');
-                label.style.width = '80px';
-                label.style.textAlign = 'center';
-                label.textContent = criteriaName;
-                
-                container.appendChild(label);
-            });
-        }
-
-        function updateStudentScoreInputs(studentId) {
-            const container = document.getElementById(`scoreInputs-${studentId}`);
-            if (!container) return;
-
-            container.innerHTML = '';
-            const criteria = document.querySelectorAll('.criteria-column');
-            
-            criteria.forEach(criteriaItem => {
-                const criteriaId = criteriaItem.id.split('-')[1];
-                
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.placeholder = '0';
-                input.min = '0';
-                input.id = `score-${studentId}-${criteriaId}`;
-                input.oninput = () => calculateStudentTotal(studentId);
-                
-                container.appendChild(input);
-            });
-        }
-
-        function calculateStudentTotal(studentId) {
-            const scoreInputs = document.querySelectorAll(`[id^="score-${studentId}-"]`);
-            let total = 0;
-            scoreInputs.forEach(input => {
-                total += parseFloat(input.value) || 0;
-            });
-            document.getElementById(`studentTotal-${studentId}`).textContent = total.toFixed(2);
-        }
-
-        function updateTotalMaxScore() {
-            const criteria = document.querySelectorAll('.criteria-column');
-            let total = 0;
-            criteria.forEach(item => {
-                const id = item.id.split('-')[1];
-                const maxScore = parseFloat(document.getElementById(`criteriaMax-${id}`).value) || 0;
-                total += maxScore;
-            });
-            document.getElementById('totalMaxScore').textContent = total.toFixed(2);
-        }
-
-        function showResults() {
-            // Validate required fields
-            const required = ['degreeLevel', 'academicYear', 'semester', 'interviewDate', 'interviewTime', 'location', 'program', 'interviewer'];
-            for (let field of required) {
-                if (!document.getElementById(field).value) {
-                    alert('กรุณากรอกข้อมูลให้ครบถ้วน');
-                    return;
-                }
-            }
-
-            const resultsTable = generateResultsTable();
-            document.getElementById('resultsTable').innerHTML = resultsTable;
-            document.getElementById('resultsSection').style.display = 'block';
-            document.getElementById('analysisSection').classList.add('hidden');
-        }
-
-        function generateResultsTable() {
-            const degreeLevel = document.getElementById('degreeLevel').value;
-            const academicYear = document.getElementById('academicYear').value;
-            const semester = document.getElementById('semester').value;
-            const interviewDate = document.getElementById('interviewDate').value;
-            const interviewTime = document.getElementById('interviewTime').value;
-            const location = document.getElementById('location').value;
-            const program = document.getElementById('program').value;
-            const interviewer = document.getElementById('interviewer').value;
-
-            let html = `
-                <div style="margin-bottom: 20px; padding: 20px; background: #f5f5f5; border-radius: 10px;">
-                    <h3 style="color: #667eea; margin-bottom: 15px;">รายละเอียดการสัมภาษณ์</h3>
-                    <p><strong>ระดับการศึกษา:</strong> ${degreeLevel}</p>
-                    <p><strong>ปีการศึกษา:</strong> ${academicYear} ภาคการศึกษา ${semester}</p>
-                    <p><strong>วันที่สัมภาษณ์:</strong> ${formatDate(interviewDate)} เวลา ${interviewTime} น.</p>
-                    <p><strong>สถานที่:</strong> ${location}</p>
-                    <p><strong>หลักสูตร:</strong> ${program}</p>
-                    <p><strong>อาจารย์ผู้สัมภาษณ์:</strong> ${interviewer}</p>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ลำดับ</th>
-                            <th>ชื่อ-นามสกุล</th>
-            `;
-
-            // Add criteria headers
-            const criteria = document.querySelectorAll('.criteria-column');
-            criteria.forEach(item => {
-                const id = item.id.split('-')[1];
-                const name = document.getElementById(`criteriaName-${id}`).value || 'ไม่ระบุ';
-                const max = document.getElementById(`criteriaMax-${id}`).value || '0';
-                html += `<th>${name}<br>(${max})</th>`;
-            });
-
-            html += `
-                            <th>รวม</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            // Add student rows
-            const students = document.querySelectorAll('.student-row');
-            let rowNum = 1;
-            students.forEach(student => {
-                const studentId = student.id.split('-')[1];
-                const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
-                const total = document.getElementById(`studentTotal-${studentId}`).textContent;
-
-                html += `
-                    <tr>
-                        <td>${rowNum++}</td>
-                        <td>${name}</td>
-                `;
-
-                criteria.forEach(item => {
-                    const criteriaId = item.id.split('-')[1];
-                    const score = document.getElementById(`score-${studentId}-${criteriaId}`).value || '0';
-                    html += `<td>${score}</td>`;
-                });
-
-                html += `
-                        <td><strong>${total}</strong></td>
-                    </tr>
-                `;
-            });
-
-            html += `
-                    </tbody>
-                </table>
-            `;
-
-            return html;
-        }
-
-        function formatDate(dateString) {
-            try {
-                if (!dateString) return 'ไม่ระบุ';
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return 'ไม่ระบุ';
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                return date.toLocaleDateString('th-TH', options);
-            } catch (error) {
-                console.error('Error formatting date:', error);
-                return 'ไม่ระบุ';
-            }
-        }
-
-        function showAnalysis() {
-            const students = document.querySelectorAll('.student-row');
-            const scores = [];
-            const names = [];
-
-            students.forEach(student => {
-                const studentId = student.id.split('-')[1];
-                const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
-                const total = parseFloat(document.getElementById(`studentTotal-${studentId}`).textContent);
-                
-                if (name && !isNaN(total)) {
-                    names.push(name);
-                    scores.push(total);
+        function sumGroup(groupName) {
+            let sum = 0;
+            const inputs = document.querySelectorAll(`.score-input[data-group="${groupName}"]`);
+            inputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (!isNaN(val)) {
+                    sum += val;
                 }
             });
-
-            if (scores.length === 0) {
-                alert('ไม่มีข้อมูลสำหรับการวิเคราะห์');
-                return;
-            }
-
-            // Calculate statistics
-            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-            const max = Math.max(...scores);
-            const min = Math.min(...scores);
-            const maxScore = parseFloat(document.getElementById('totalMaxScore').textContent);
-
-            // Display statistics
-            const statsHtml = `
-                <div class="stat-card">
-                    <h3>จำนวนนิสิต</h3>
-                    <div class="value">${scores.length}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>คะแนนเฉลี่ย</h3>
-                    <div class="value">${avg.toFixed(2)}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>คะแนนสูงสุด</h3>
-                    <div class="value">${max.toFixed(2)}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>คะแนนต่ำสุด</h3>
-                    <div class="value">${min.toFixed(2)}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>คะแนนเต็ม</h3>
-                    <div class="value">${maxScore}</div>
-                </div>
-            `;
-            document.getElementById('statisticsContainer').innerHTML = statsHtml;
-
-            // Create chart
-            createChart(names, scores);
-
-            document.getElementById('analysisSection').classList.remove('hidden');
+            return sum;
         }
 
-        function createChart(names, scores) {
-            const ctx = document.getElementById('scoreChart').getContext('2d');
-            
-            if (chart) {
-                chart.destroy();
-            }
+        // Toggle Preview Mode (ReadOnly)
+        let isPreview = false;
+        function togglePreview() {
+            isPreview = !isPreview;
+            const inputs = document.querySelectorAll('input, select, textarea');
+            const docArea = document.getElementById('document-area');
+            const btn = document.querySelector('button[onclick="togglePreview()"]');
 
-            chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: names,
-                    datasets: [{
-                        label: 'คะแนนที่ได้',
-                        data: scores,
-                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
-                        borderColor: 'rgba(102, 126, 234, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'กราฟแสดงคะแนนการสัมภาษณ์',
-                            font: {
-                                size: 18
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'คะแนน'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'นิสิต'
-                            }
-                        }
+            if (isPreview) {
+                // Switch to Preview
+                inputs.forEach(el => {
+                    if(el.type !== 'radio') {
+                        el.setAttribute('readonly', 'true');
+                        if(el.tagName === 'SELECT') el.setAttribute('disabled', 'true');
+                        el.classList.add('bg-transparent', 'border-none');
+                        el.classList.remove('border', 'border-gray-400', 'bg-white');
+                        // Fix for signature line in preview
+                        if(el.id === 'signerName') el.classList.remove('border-b'); 
                     }
-                }
-            });
-        }
-
-        function downloadChart() {
-            const canvas = document.getElementById('scoreChart');
-            canvas.toBlob(function(blob) {
-                saveAs(blob, 'interview_chart.png');
-            });
-        }
-
-        function downloadExcel() {
-            try {
-                // Validate that results have been shown
-                if (document.getElementById('resultsSection').style.display === 'none') {
-                    alert('กรุณากดปุ่ม "นำเสนอข้อมูล" ก่อนดาวน์โหลด');
-                    return;
-                }
-
-                const wb = XLSX.utils.book_new();
-                
-                // Create header data
-                const interviewDateValue = document.getElementById('interviewDate').value;
-                const formattedDate = interviewDateValue ? formatDate(interviewDateValue) : 'ไม่ระบุ';
-                
-                const headerData = [
-                    ['ระบบประเมินการสัมภาษณ์นิสิต'],
-                    [''],
-                    ['ระดับการศึกษา:', document.getElementById('degreeLevel').value || 'ไม่ระบุ'],
-                    ['ปีการศึกษา:', document.getElementById('academicYear').value || 'ไม่ระบุ', 'ภาคการศึกษา:', document.getElementById('semester').value || 'ไม่ระบุ'],
-                    ['วันที่สัมภาษณ์:', formattedDate, 'เวลา:', document.getElementById('interviewTime').value || 'ไม่ระบุ'],
-                    ['สถานที่:', document.getElementById('location').value || 'ไม่ระบุ'],
-                    ['หลักสูตร:', document.getElementById('program').value || 'ไม่ระบุ'],
-                    ['อาจารย์ผู้สัมภาษณ์:', document.getElementById('interviewer').value || 'ไม่ระบุ'],
-                    [''],
-                ];
-
-                // Create table headers
-                const tableHeaders = ['ลำดับ', 'ชื่อ-นามสกุล'];
-                const criteria = document.querySelectorAll('.criteria-column');
-                criteria.forEach(item => {
-                    const id = item.id.split('-')[1];
-                    const name = document.getElementById(`criteriaName-${id}`).value || 'ไม่ระบุ';
-                    const max = document.getElementById(`criteriaMax-${id}`).value || '0';
-                    tableHeaders.push(`${name} (${max})`);
                 });
-                tableHeaders.push('รวม');
-
-                const data = [tableHeaders];
-
-                // Add student data
-                const students = document.querySelectorAll('.student-row');
-                let rowNum = 1;
-                students.forEach(student => {
-                    const studentId = student.id.split('-')[1];
-                    const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
-                    const total = document.getElementById(`studentTotal-${studentId}`).textContent || '0';
-
-                    const row = [rowNum++, name];
-
-                    criteria.forEach(item => {
-                        const criteriaId = item.id.split('-')[1];
-                        const score = parseFloat(document.getElementById(`score-${studentId}-${criteriaId}`).value) || 0;
-                        row.push(score);
-                    });
-
-                    row.push(parseFloat(total));
-                    data.push(row);
-                });
-
-                const allData = [...headerData, ...data];
-                const ws = XLSX.utils.aoa_to_sheet(allData);
-                
-                // Set column widths
-                ws['!cols'] = [
-                    { wch: 8 },
-                    { wch: 30 },
-                    ...Array(criteria.length).fill({ wch: 15 }),
-                    { wch: 10 }
-                ];
-
-                XLSX.utils.book_append_sheet(wb, ws, 'ผลการสัมภาษณ์');
-                XLSX.writeFile(wb, 'interview_results.xlsx');
-                
-                // Show success message
-                setTimeout(() => {
-                    alert('✅ ดาวน์โหลดไฟล์ Excel สำเร็จ!\nกรุณาตรวจสอบในโฟลเดอร์ Downloads');
-                }, 100);
-                
-            } catch (error) {
-                alert('❌ เกิดข้อผิดพลาดในการดาวน์โหลด Excel: ' + error.message);
-                console.error('Download Excel Error:', error);
-            }
-        }
-
-        function downloadWord() {
-            try {
-                // Validate that results have been shown
-                if (document.getElementById('resultsSection').style.display === 'none') {
-                    alert('กรุณากดปุ่ม "นำเสนอข้อมูล" ก่อนดาวน์โหลด');
-                    return;
-                }
-
-                // Get form data with validation
-                const degreeLevel = document.getElementById('degreeLevel').value || 'ไม่ระบุ';
-                const academicYear = document.getElementById('academicYear').value || 'ไม่ระบุ';
-                const semester = document.getElementById('semester').value || 'ไม่ระบุ';
-                const interviewDateValue = document.getElementById('interviewDate').value;
-                const interviewDate = interviewDateValue ? formatDate(interviewDateValue) : 'ไม่ระบุ';
-                const interviewTime = document.getElementById('interviewTime').value || 'ไม่ระบุ';
-                const location = document.getElementById('location').value || 'ไม่ระบุ';
-                const program = document.getElementById('program').value || 'ไม่ระบุ';
-                const interviewer = document.getElementById('interviewer').value || 'ไม่ระบุ';
-
-                // Build criteria headers
-                const criteria = document.querySelectorAll('.criteria-column');
-                let criteriaHeaders = '';
-                criteria.forEach(item => {
-                    const id = item.id.split('-')[1];
-                    const name = document.getElementById(`criteriaName-${id}`).value || 'ไม่ระบุ';
-                    const max = document.getElementById(`criteriaMax-${id}`).value || '0';
-                    criteriaHeaders += `<th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">${name}<br/>(${max})</th>`;
-                });
-
-                // Build student rows
-                const students = document.querySelectorAll('.student-row');
-                let studentRows = '';
-                let rowNum = 1;
-                students.forEach(student => {
-                    const studentId = student.id.split('-')[1];
-                    const name = document.getElementById(`studentName-${studentId}`).value || 'ไม่ระบุชื่อ';
-                    const total = document.getElementById(`studentTotal-${studentId}`).textContent || '0';
-
-                    studentRows += `<tr>`;
-                    studentRows += `<td style="border: 1px solid #000; padding: 8px; text-align: center;">${rowNum++}</td>`;
-                    studentRows += `<td style="border: 1px solid #000; padding: 8px;">${name}</td>`;
-
-                    criteria.forEach(item => {
-                        const criteriaId = item.id.split('-')[1];
-                        const score = document.getElementById(`score-${studentId}-${criteriaId}`).value || '0';
-                        studentRows += `<td style="border: 1px solid #000; padding: 8px; text-align: center;">${score}</td>`;
-                    });
-
-                    studentRows += `<td style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">${total}</td>`;
-                    studentRows += `</tr>`;
-                });
-
-                let content = `
-                    <html xmlns:o='urn:schemas-microsoft-com:office:office' 
-                          xmlns:w='urn:schemas-microsoft-com:office:word' 
-                          xmlns='http://www.w3.org/TR/REC-html40'>
-                    <head>
-                        <meta charset='utf-8'>
-                        <title>ผลการประเมินการสัมภาษณ์</title>
-                        <style>
-                            body { font-family: 'Sarabun', 'Cordia New', 'TH SarabunPSK', sans-serif; }
-                            h1 { text-align: center; color: #667eea; margin-bottom: 20px; }
-                            .info-section { margin: 20px 0; padding: 15px; background: #f5f5f5; }
-                            .info-section p { margin: 5px 0; }
-                            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                            th { background: #667eea; color: white; font-weight: bold; }
-                            td, th { border: 1px solid #000; padding: 8px; }
-                            tr:nth-child(even) { background: #f9f9f9; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>ระบบประเมินการสัมภาษณ์นิสิต</h1>
+                docArea.classList.add('shadow-none');
+                btn.innerText = "✏️ กลับไปแก้ไข";
+                btn.classList.replace('bg-blue-600', 'bg-yellow-500');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-yellow-600');
+            } else {
+                // Switch to Edit
+                inputs.forEach(el => {
+                     if(el.type !== 'radio') {
+                        el.removeAttribute('readonly');
+                        if(el.tagName === 'SELECT') el.removeAttribute('disabled');
+                        el.classList.remove('bg-transparent', 'border-none');
                         
-                        <div class="info-section">
-                            <h3 style="color: #667eea; margin-bottom: 10px;">รายละเอียดการสัมภาษณ์</h3>
-                            <p><strong>ระดับการศึกษา:</strong> ${degreeLevel}</p>
-                            <p><strong>ปีการศึกษา:</strong> ${academicYear} ภาคการศึกษา ${semester}</p>
-                            <p><strong>วันที่สัมภาษณ์:</strong> ${interviewDate} เวลา ${interviewTime} น.</p>
-                            <p><strong>สถานที่:</strong> ${location}</p>
-                            <p><strong>หลักสูตร:</strong> ${program}</p>
-                            <p><strong>อาจารย์ผู้สัมภาษณ์:</strong> ${interviewer}</p>
-                        </div>
-
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">ลำดับ</th>
-                                    <th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">ชื่อ-นามสกุล</th>
-                                    ${criteriaHeaders}
-                                    <th style="border: 1px solid #000; padding: 8px; background: #667eea; color: white;">รวม</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${studentRows}
-                            </tbody>
-                        </table>
-                    </body>
-                    </html>
-                `;
-
-                const blob = new Blob(['\ufeff', content], {
-                    type: 'application/msword'
+                        if(el.tagName === 'INPUT' && el.type === 'text') {
+                             if(el.id === 'signerName') el.classList.add('border-b');
+                             else el.classList.add('border-b', 'border-gray-400');
+                        }
+                        else if(el.classList.contains('score-input')) {} 
+                        else el.classList.add('border', 'border-gray-400');
+                     }
                 });
-
-                saveAs(blob, 'interview_results.doc');
-                
-                // Show success message
-                setTimeout(() => {
-                    alert('✅ ดาวน์โหลดไฟล์ Word สำเร็จ!\nกรุณาตรวจสอบในโฟลเดอร์ Downloads');
-                }, 100);
-                
-            } catch (error) {
-                alert('❌ เกิดข้อผิดพลาดในการดาวน์โหลด Word: ' + error.message);
-                console.error('Download Word Error:', error);
+                docArea.classList.remove('shadow-none');
+                btn.innerText = "👁️ แสดงผลข้อมูล / แก้ไข";
+                btn.classList.replace('bg-yellow-500', 'bg-blue-600');
+                btn.classList.replace('hover:bg-yellow-600', 'hover:bg-blue-700');
             }
         }
 
         function resetForm() {
-            if (confirm('คุณต้องการรีเซ็ตฟอร์มทั้งหมดหรือไม่?')) {
-                location.reload();
+            if(confirm("ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่?")) {
+                document.querySelectorAll('input').forEach(i => {
+                    if(i.type === 'radio' || i.type === 'checkbox') i.checked = false;
+                    else i.value = '';
+                });
+                document.querySelectorAll('select, textarea').forEach(i => i.value = '');
+                calcScores();
+                if(isPreview) togglePreview(); // exit preview mode
             }
         }
 
-        // Initialize on page load
-        window.onload = init;
+        // Export to Word with APA-like Styling
+        function exportToWord() {
+            const originalContent = document.getElementById('document-area').cloneNode(true);
+            
+            // Convert inputs to text for Word
+            const inputs = originalContent.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                const value = input.value;
+                const span = document.createElement('span');
+                
+                if (input.type === 'radio') {
+                    if(input.checked) {
+                        span.innerText = "☒ " + input.nextElementSibling.innerText;
+                        span.style.fontWeight = "bold";
+                    } else {
+                         span.innerText = "☐ " + input.nextElementSibling.innerText;
+                    }
+                     input.parentElement.replaceWith(span);
+                } else if(input.tagName === 'SELECT') {
+                     span.innerText = input.options[input.selectedIndex]?.text || '';
+                     input.replaceWith(span);
+                } else {
+                    span.innerText = value;
+                    // Handle Signature input specifically
+                    if(input.id === 'signerName') {
+                         if(value.trim() === '') span.innerText = "........................................";
+                         span.style.textAlign = 'center';
+                         span.style.display = 'inline-block';
+                         span.style.width = '200px';
+                    }
+                    if(input.classList.contains('score-input')) {
+                        span.style.display = 'block';
+                        span.style.textAlign = 'center';
+                    }
+                    input.replaceWith(span);
+                }
+            });
+
+            // Remove visual-only elements
+            const noPrints = originalContent.querySelectorAll('.no-print');
+            noPrints.forEach(el => el.remove());
+
+            // APA / Formal Document Styling
+            const css = `
+                <style>
+                    @page {
+                        size: A4;
+                        margin: 2.54cm; /* APA 1 inch margin */
+                    }
+                    body {
+                        font-family: 'TH Sarabun New', 'TH SarabunPSK', 'Times New Roman', serif;
+                        font-size: 16pt;
+                        line-height: 1.5;
+                        color: #000;
+                    }
+                    h1, h2, h3 { font-weight: bold; }
+                    table { border-collapse: collapse; width: 100%; margin-bottom: 12pt; }
+                    td, th { border: 1px solid black; padding: 4pt; vertical-align: top; font-size: 14pt; }
+                    .text-center { text-align: center; }
+                    .font-bold { font-weight: bold; }
+                    .flex { display: flex; } /* Word support for flex is poor, but kept for fallback */
+                </style>
+            `;
+
+            const preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Interview Assessment</title>" + css + "</head><body>";
+            const postHtml = "</body></html>";
+            const html = preHtml + originalContent.innerHTML + postHtml;
+
+            const blob = new Blob(['\ufeff', html], {
+                type: 'application/msword'
+            });
+            
+            const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+            const downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            
+            if(navigator.msSaveOrOpenBlob ){
+                navigator.msSaveOrOpenBlob(blob, 'interview_result_apa.doc');
+            } else {
+                downloadLink.href = url;
+                downloadLink.download = 'interview_result_apa.doc';
+                downloadLink.click();
+            }
+            
+            document.body.removeChild(downloadLink);
+        }
     </script>
 </body>
 </html>
